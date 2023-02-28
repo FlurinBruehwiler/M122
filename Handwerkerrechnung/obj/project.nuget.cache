@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "m5MM6Xroo6uV82Rr77Wuxx5tfoQxBES36PYwKy1/bU6RSeYOZE3L1U27ICmcw0de1JeLNiys4khbER4TwwRyCA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung\\Handwerkerrechnung.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\FBR\\.nuget\\packages\\fluentftp\\45.1.0\\fluentftp.45.1.0.nupkg.sha512"
+  ],
+  "logs": []
+}
