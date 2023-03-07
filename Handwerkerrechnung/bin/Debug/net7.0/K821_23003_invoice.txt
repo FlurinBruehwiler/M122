@@ -45,7 +45,7 @@ Bahnhofstrasse 1           |  QR-CODE             |  Bahnhofstrasse 1
                            |                      |  
                            |                      |  
 00 00000 00000 00000 00000 |                      |  00 00000 00000 00000 00000
-                           |                      |  
+                           |                      |     
 Autoleasing AG             |                      |  Autoleasing AG
 Gewerbestrasse 100         |                      |  Gewerbestrasse 100
 5000 Aarau                 |                      |  5000 Aarau
