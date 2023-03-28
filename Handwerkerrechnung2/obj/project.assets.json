@@ -55,11 +55,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung\\Handwerkerrechnung.csproj",
-      "projectName": "Handwerkerrechnung",
-      "projectPath": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung\\Handwerkerrechnung.csproj",
+      "projectUniqueName": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung2\\Handwerkerrechnung2.csproj",
+      "projectName": "Handwerkerrechnung2",
+      "projectPath": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung2\\Handwerkerrechnung2.csproj",
       "packagesPath": "C:\\Users\\FBR\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung\\obj\\",
+      "outputPath": "C:\\Users\\FBR\\RiderProjects\\Handwerkerrechnungen\\Handwerkerrechnung2\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\FBR\\AppData\\Roaming\\NuGet\\NuGet.Config",

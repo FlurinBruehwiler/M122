@@ -1,20 +1,29 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Text;
 using FluentFTP;
 using FluentFTP.Helpers;
 
-using var haraldClient = new FtpClient
+using var ftpKundensystem = new FtpClient
 {
     Host = "ftp.haraldmueller.ch",
-    Credentials = new NetworkCredential("schueler", "studentenpasswort")
+    Credentials = new NetworkCredential("schoolerinvoices", "Berufsschule8005!")
 };
 
-haraldClient.Connect();
+ftpKundensystem.Connect();
 
-var stream = new MemoryStream();
-haraldClient.DownloadStream(stream, "/M122-AP20b/Bruehwiler");
-var reader = new StreamReader(stream);
-var text = reader.ReadToEnd();
+using var ftpSix = new FtpClient
+{
+    Host = "ftp.coinditorei.com",
+    Credentials = new NetworkCredential("zahlungssystem", "Berufsschule8005!")
+};
+
+ftpSix.Connect();
+
+var file = ftpKundensystem.GetListing("out/AP20b/Bruehwiler").FirstOrDefault();
+
+ftpKundensystem.DownloadBytes(out var bytes, file.FullName);
+var text = Encoding.UTF8.GetString(bytes);
 
 // var text = File.ReadAllText("Input.data");
 
@@ -173,7 +182,7 @@ File.WriteAllText(txtFileName, txt);
 
 //Generate Rechnung als XML
 
-var xmlFileName = "[Kundennummer]_[Rechnungsnummer]_invoice.xml";
+var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
 
 var xml = $"""
 <XML-FSCM-INVOICE-2003A>
@@ -327,18 +336,7 @@ var xml = $"""
 </XML-FSCM-INVOICE-2003A>
 """;
 
-using var conditoreiClient = new FtpClient
-{
-    Host = "ftp.coinditorei.com",
-    Credentials = new NetworkCredential("zahlungssystem", "Berufsschule8005")
-};
 
-conditoreiClient.Connect();
+ftpSix.UploadBytes(Encoding.UTF8.GetBytes(txt), $"in/AP20bBruehwiler/{txtFileName}");
 
-var textStream = new MemoryStream();
-new StreamWriter(textStream).Write(text);
-haraldClient.UploadStream(textStream, $"in/AP20bBruehwiler/{txtFileName}");
-
-var xmlStream = new MemoryStream();
-new StreamWriter(xmlStream).Write(xml);
-haraldClient.UploadStream(xmlStream, $"in/AP20bBruehwiler/{xmlFileName}");
+ftpSix.UploadBytes(Encoding.UTF8.GetBytes(xml), $"in/AP20bBruehwiler/{xmlFileName}");

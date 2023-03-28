@@ -8,8 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentFTP" Version="45.1.0" />
+        <PackageReference Include="FluentFTP" Version="45.1.0" />
     </ItemGroup>
-
     
 </Project>
