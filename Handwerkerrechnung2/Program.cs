@@ -1,12 +1,11 @@
 ﻿using System.IO.Compression;
 using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
 using FluentFTP;
 using FluentFTP.Helpers;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 const string invoicesPath = @"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\invoices";
-
 
 using var ftpKundensystem = new FtpClient
 {
@@ -53,22 +52,22 @@ ZipFile.CreateFromDirectory(folderToZip, zipFile);
 var inputDataText = File.ReadAllLines(Path.Combine(invoiceFolder, "input.data"));
 var email = inputDataText[1].Split(";").Last();
 
-var smtpClient = new SmtpClient("smtp.gmail.com")
+var message = new MimeMessage
 {
-    Port = 587,
-    Credentials = new NetworkCredential("username", "password"),
-    EnableSsl = true
+    From = { new MailboxAddress("Flurin", "bruhwiler.flurin@gmail.com") },
+    To = { new MailboxAddress("Geschätzter aber nicht geliebter Kunde", email) },
+    Subject = "Handwerkerrechnung Quittung"
 };
 
-var message = new MailMessage
-{
-    Attachments = { new Attachment(zipFile, MediaTypeNames.Application.Zip) },
-    From = new MailAddress("bruhwiler.flurin@gmail.com"),
-    To = { email },
-    Subject = "Quittung"
-};
+var builder = new BodyBuilder();
+builder.Attachments.Add(zipFile);
+message.Body = builder.ToMessageBody();
 
-smtpClient.Send(message);
+using var client = new SmtpClient();
+client.Connect("smtp.gmail.com", 465, true);
+client.Authenticate("bruhwiler.flurin@gmail.com", "jnzbhaymanqwsqxy");
+client.Send(message);
+client.Disconnect(true);
 
 ftpKundensystem.UploadFile(zipFile, $"int/AP20b/Bruehwiler/{invoiceName}.zip");
 

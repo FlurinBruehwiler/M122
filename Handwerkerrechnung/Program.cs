@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Net;
-using System.Text;
 using FluentFTP;
 using FluentFTP.Helpers;
 
@@ -22,10 +21,14 @@ ftpSix.Connect();
 
 var file = ftpKundensystem.GetListing("out/AP20b/Bruehwiler").FirstOrDefault();
 
-ftpKundensystem.DownloadBytes(out var bytes, file.FullName);
-var text = Encoding.UTF8.GetString(bytes);
+if (file is null)
+    return;
 
-// var text = File.ReadAllText("Input.data");
+const string invoicesPath = @"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\invoices";
+
+var dataTempFile = Path.Combine(invoicesPath, "temp", $"{Guid.NewGuid()}.data");
+ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
+var text = File.ReadAllText(dataTempFile);
 
 var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
 
@@ -39,18 +42,26 @@ var auftragsnummer = header[1].RemovePrefix("Auftrag_"); //A003
 
 var datum = header[3]; //21.07.2023
 
-var herkunft_id = herkunft[1];
-var herkunft_name = herkunft[3]; //Adam Adler
-var herkunft_adresse1 = herkunft[4]; //Bahnhofstrasse 1
-var herkunft_adresse2 = herkunft[5].Trim(); //8000 Zuerich
+var herkunftId = herkunft[1];
+var herkunftName = herkunft[3]; //Adam Adler
+var herkunftAdresse1 = herkunft[4]; //Bahnhofstrasse 1
+var herkunftAdresse2 = herkunft[5].Trim(); //8000 Zuerich
 
 var kundennummer = herkunft[2]; //K821
 var rechnungsname = herkunft[6]; //CHE-111.222.333 MWST
 
-var endkund_id = endkunde[1];
-var endkunde_name = endkunde[2]; //Autoleasing AG
-var endkunde_adresse1 = endkunde[3]; //Gewerbestrasse 100
-var endkunde_adresse2 = endkunde[4].Trim(); //5000 Aarau
+var endkundId = endkunde[1];
+var endkundeName = endkunde[2]; //Autoleasing AG
+var endkundeAdresse1 = endkunde[3]; //Gewerbestrasse 100
+var endkundeAdresse2 = endkunde[4].Trim(); //5000 Aarau
+
+var myKoohlDirectory = Path.Combine(invoicesPath, rechnungsnummer);
+
+Directory.CreateDirectory(myKoohlDirectory);
+
+var finalDataFile = Path.Combine(invoicesPath, "input.data");
+
+File.Move(dataTempFile, finalDataFile);
 
 var stringItems = string.Empty;
 
@@ -63,7 +74,7 @@ foreach (var row in content)
     var count = row[3];
     var amount1 = row[4];
     var amount2 = row[5];
-    var mwst = row[6];
+    // var mwst = row[6];
 
     stringItems += nr;
     stringItems += new string(' ', 4 - nr.Length);
@@ -98,41 +109,41 @@ var endDate = startDate.AddDays(30).ToString("dd.MM.yyyy");
 
 
 
-var padding1 = herkunft_name;
-padding1 += new string(' ', 27 - herkunft_name.Length);
+var padding1 = herkunftName;
+padding1 += new string(' ', 27 - herkunftName.Length);
 
-var padding2 = herkunft_adresse1;
-padding2 += new string(' ', 27 - herkunft_adresse1.Length);
+var padding2 = herkunftAdresse1;
+padding2 += new string(' ', 27 - herkunftAdresse1.Length);
 
-var padding3 = herkunft_adresse2;
-padding3 += new string(' ', 27 - herkunft_adresse2.Length);
+var padding3 = herkunftAdresse2;
+padding3 += new string(' ', 27 - herkunftAdresse2.Length);
 
-var padding4 = endkunde_name;
-padding4 += new string(' ', 27 - endkunde_name.Length);
+var padding4 = endkundeName;
+padding4 += new string(' ', 27 - endkundeName.Length);
 
-var padding5 = endkunde_adresse1;
-padding5 += new string(' ', 27 - endkunde_adresse1.Length);
+var padding5 = endkundeAdresse1;
+padding5 += new string(' ', 27 - endkundeAdresse1.Length);
 
-var padding6 = endkunde_adresse2;
-padding6 += new string(' ', 27 - endkunde_adresse2.Length);
+var padding6 = endkundeAdresse2;
+padding6 += new string(' ', 27 - endkundeAdresse2.Length);
 
 
 var txt = @$"-------------------------------------------------
 
 
 
-{herkunft_name}
-{herkunft_adresse1}
-{herkunft_adresse2}
+{herkunftName}
+{herkunftAdresse1}
+{herkunftAdresse2}
 
 {rechnungsname}
 
 
 
 
-Uster, den {datum}                                 {endkunde_name}
-                                                {endkunde_adresse1}
-                                                {endkunde_adresse2}
+Uster, den {datum}                                 {endkundeName}
+                                                {endkundeAdresse1}
+                                                {endkundeAdresse2}
 
 Kundennummer:      {kundennummer}
 Auftragsnummer:    {auftragsnummer}
@@ -157,16 +168,16 @@ Zahlungsziel ohne Abzug 30 Tage ({endDate})
 
 Empfangsschein             Zahlteil                
 
-{padding1}------------------------  {herkunft_name}       
-{padding2}|  QR-CODE             |  {herkunft_adresse1} 
-{padding3}|                      |  {herkunft_adresse2}
+{padding1}------------------------  {herkunftName}       
+{padding2}|  QR-CODE             |  {herkunftAdresse1} 
+{padding3}|                      |  {herkunftAdresse2}
                            |                      |  
                            |                      |  
 00 00000 00000 00000 00000 |                      |  00 00000 00000 00000 00000
                            |                      |     
-{padding4}|                      |  {endkunde_name}
-{padding5}|                      |  {endkunde_adresse1}
-{padding6}|                      |  {endkunde_adresse2}
+{padding4}|                      |  {endkundeName}
+{padding5}|                      |  {endkundeAdresse1}
+{padding6}|                      |  {endkundeAdresse2}
                            ------------------------
 Währung  Betrag            Währung  Betrag
 CHF      {string2Total}CHF      {formatedTotalAmount}								
@@ -188,10 +199,10 @@ var xml = $"""
 <XML-FSCM-INVOICE-2003A>
     <INTERCHANGE>
         <IC-SENDER>
-            <Pid>{herkunft_id}</Pid>
+            <Pid>{herkunftId}</Pid>
         </IC-SENDER>
         <IC-RECEIVER>
-            <Pid>{endkund_id}</Pid>
+            <Pid>{endkundId}</Pid>
         </IC-RECEIVER>
         <IR-Ref />
     </INTERCHANGE>
@@ -240,13 +251,13 @@ var xml = $"""
                 <Tax-No>{rechnungsname}</Tax-No>
                 <Doc-Reference Type="ESR-ALT "></Doc-Reference>
                 <PARTY-ID>
-                    <Pid>{herkunft_id}</Pid>
+                    <Pid>{herkunftId}</Pid>
                 </PARTY-ID>
                 <NAME-ADDRESS Format="COM">
                     <NAME>
-                        <Line-35>{herkunft_name}</Line-35>
-                        <Line-35>{herkunft_adresse1}</Line-35>
-                        <Line-35>{herkunft_adresse2}</Line-35>
+                        <Line-35>{herkunftName}</Line-35>
+                        <Line-35>{herkunftAdresse1}</Line-35>
+                        <Line-35>{herkunftAdresse2}</Line-35>
                         <Line-35></Line-35>
                         <Line-35></Line-35>
                     </NAME>
@@ -268,13 +279,13 @@ var xml = $"""
             </BILLER>
             <PAYER>
                 <PARTY-ID>
-                    <Pid>{endkund_id}</Pid>
+                    <Pid>{endkundId}</Pid>
                 </PARTY-ID>
                 <NAME-ADDRESS Format="COM">
                     <NAME>
-                        <Line-35>{endkunde_name}</Line-35>
-                        <Line-35>{endkunde_adresse1}</Line-35>
-                        <Line-35>{endkunde_adresse2}</Line-35>
+                        <Line-35>{endkundeName}</Line-35>
+                        <Line-35>{endkundeAdresse1}</Line-35>
+                        <Line-35>{endkundeAdresse2}</Line-35>
                         <Line-35></Line-35>
                         <Line-35></Line-35>
                     </NAME>
@@ -336,7 +347,11 @@ var xml = $"""
 </XML-FSCM-INVOICE-2003A>
 """;
 
+var invoiceXmlFile = Path.Combine(invoicesPath, "invoice.xml");
+var invoiceTxtFile = Path.Combine(invoicesPath, "invoice.txt");
 
-ftpSix.UploadBytes(Encoding.UTF8.GetBytes(txt), $"in/AP20bBruehwiler/{txtFileName}");
+File.WriteAllText(invoiceXmlFile, xml);
+File.WriteAllText(invoiceTxtFile, txt);
 
-ftpSix.UploadBytes(Encoding.UTF8.GetBytes(xml), $"in/AP20bBruehwiler/{xmlFileName}");
+ftpSix.UploadFile(invoiceXmlFile, $"in/AP20bBruehwiler/{xmlFileName}");
+ftpSix.UploadFile(invoiceTxtFile, $"in/AP20bBruehwiler/{txtFileName}");
