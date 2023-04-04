@@ -1,0 +1,59 @@
+-------------------------------------------------
+
+
+
+Adam Adler
+Bahnhofstrasse 1
+8000 Zuerich
+
+CHE-111.222.333 MWST
+
+
+
+
+Uster, den 19.08.2023                                 Blerina Berisha
+                                                Fabrikstrasse 32
+                                                8610 Uster
+
+Kundennummer:      K821
+Auftragsnummer:    A004
+	
+Rechnung Nr       23004
+-----------------------
+1   Fancy socks pink                      2      12.50  CHF       25.00
+2   Fancy socks neon-green                8      12.50  CHF      100.00
+3   Borat-String-Pant pink                1      58.50  CHF       58.50
+4   Borat-String-Pant neon-green          1      58.50  CHF       58.50
+5   Versand & Verpackung                  1       9.00  CHF        9.00
+                                                             -----------       
+                                                  Total CHF      251.00
+
+                                                  MWST  CHF        0.00
+
+
+
+
+
+
+
+
+Zahlungsziel ohne Abzug 30 Tage (18.09.2023)
+
+
+Empfangsschein             Zahlteil                
+
+Adam Adler                 ------------------------  Adam Adler       
+Bahnhofstrasse 1           |  QR-CODE             |  Bahnhofstrasse 1 
+8000 Zuerich               |                      |  8000 Zuerich
+                           |                      |  
+                           |                      |  
+00 00000 00000 00000 00000 |                      |  00 00000 00000 00000 00000
+                           |                      |     
+Blerina Berisha            |                      |  Blerina Berisha
+Fabrikstrasse 32           |                      |  Fabrikstrasse 32
+8610 Uster                 |                      |  8610 Uster
+                           ------------------------
+Währung  Betrag            Währung  Betrag
+CHF      251.00            CHF      251.00								
+
+-------------------------------------------------

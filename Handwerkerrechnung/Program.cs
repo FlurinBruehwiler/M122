@@ -2,6 +2,7 @@
 using System.Net;
 using FluentFTP;
 using FluentFTP.Helpers;
+using Handwerkerrechnung;
 
 using var ftpKundensystem = new FtpClient
 {
@@ -11,6 +12,8 @@ using var ftpKundensystem = new FtpClient
 
 ftpKundensystem.Connect();
 
+Logger.Info("Connected to Kundensystem FTP");
+
 using var ftpSix = new FtpClient
 {
     Host = "ftp.coinditorei.com",
@@ -19,16 +22,23 @@ using var ftpSix = new FtpClient
 
 ftpSix.Connect();
 
+Logger.Info("Connected to Six FTP");
+
 var file = ftpKundensystem.GetListing("out/AP20b/Bruehwiler").FirstOrDefault();
 
 if (file is null)
     return;
 
+Logger.Info($"Neue Rechnung gefunden!!!: {file.Name}");
+
 const string invoicesPath = @"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\invoices";
 
 var dataTempFile = Path.Combine(invoicesPath, "temp", $"{Guid.NewGuid()}.data");
 ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
+
 var text = File.ReadAllText(dataTempFile);
+
+Logger.Info("Rechnung erfolgreich heruntergeladen");
 
 var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
 
@@ -55,13 +65,17 @@ var endkundeName = endkunde[2]; //Autoleasing AG
 var endkundeAdresse1 = endkunde[3]; //Gewerbestrasse 100
 var endkundeAdresse2 = endkunde[4].Trim(); //5000 Aarau
 
+Logger.Info("Parsing der Rechnung erfolgreich");
+
 var myKoohlDirectory = Path.Combine(invoicesPath, rechnungsnummer);
 
 Directory.CreateDirectory(myKoohlDirectory);
 
-var finalDataFile = Path.Combine(invoicesPath, "input.data");
+var finalDataFile = Path.Combine(myKoohlDirectory, "input.data");
 
 File.Move(dataTempFile, finalDataFile);
+
+Logger.Info("Beginne Generierung von txt Datei");
 
 var stringItems = string.Empty;
 
@@ -102,12 +116,8 @@ var string2Total = formatedTotalAmount + new string(' ', 18 - formatedTotalAmoun
 
 var stringRechnungsnummer = new string(' ', 12 - rechnungsnummer.Length) + rechnungsnummer;
 
-
-
 var startDate = DateTime.ParseExact(datum, "dd.MM.yyyy", CultureInfo.InvariantCulture);
 var endDate = startDate.AddDays(30).ToString("dd.MM.yyyy");
-
-
 
 var padding1 = herkunftName;
 padding1 += new string(' ', 27 - herkunftName.Length);
@@ -191,7 +201,12 @@ var txtFileName = $"{kundennummer}_{rechnungsnummer}_invoice.txt";
 
 File.WriteAllText(txtFileName, txt);
 
+Logger.Info("Generierung von txt Datei abgeschlosseen");
+
 //Generate Rechnung als XML
+
+Logger.Info("Beginne generierung von xml Datei");
+
 
 var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
 
@@ -347,11 +362,17 @@ var xml = $"""
 </XML-FSCM-INVOICE-2003A>
 """;
 
-var invoiceXmlFile = Path.Combine(invoicesPath, "invoice.xml");
-var invoiceTxtFile = Path.Combine(invoicesPath, "invoice.txt");
+Logger.Info("Generierung von xml Datei abgeschlosseen");
+
+
+var invoiceXmlFile = Path.Combine(myKoohlDirectory, "invoice.xml");
+var invoiceTxtFile = Path.Combine(myKoohlDirectory, "invoice.txt");
 
 File.WriteAllText(invoiceXmlFile, xml);
 File.WriteAllText(invoiceTxtFile, txt);
 
 ftpSix.UploadFile(invoiceXmlFile, $"in/AP20bBruehwiler/{xmlFileName}");
 ftpSix.UploadFile(invoiceTxtFile, $"in/AP20bBruehwiler/{txtFileName}");
+
+Logger.Info("Upload von xml Datei abgeschlosseen");
+Logger.Info("Upload von txt Datei abgeschlosseen");

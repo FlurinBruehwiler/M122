@@ -1,0 +1,149 @@
+<XML-FSCM-INVOICE-2003A>
+    <INTERCHANGE>
+        <IC-SENDER>
+            <Pid>41010000001234567</Pid>
+        </IC-SENDER>
+        <IC-RECEIVER>
+            <Pid>41301000000012498</Pid>
+        </IC-RECEIVER>
+        <IR-Ref />
+    </INTERCHANGE>
+    <INVOICE>
+        <HEADER>
+            <FUNCTION-FLAGS>
+                <Confirmation-Flag />
+                <Canellation-Flag />
+            </FUNCTION-FLAGS>
+            <MESSAGE-REFERENCE>
+                <REFERENCE-DATE>
+                    <Reference-No>202307314522001</Reference-No>
+                    <Date>20230819</Date>
+                </REFERENCE-DATE>
+            </MESSAGE-REFERENCE>
+            <PRINT-DATE>
+                <Date>20230819</Date>
+            </PRINT-DATE>
+            <REFERENCE>
+                <INVOICE-REFERENCE>
+                    <REFERENCE-DATE>
+                        <Reference-No>23004</Reference-No>
+                        <Date>20230819</Date>
+                    </REFERENCE-DATE>
+                </INVOICE-REFERENCE>
+                <ORDER>
+                    <REFERENCE-DATE>
+                        <Reference-No>A004</Reference-No>
+                        <Date>20230819</Date>
+                    </REFERENCE-DATE>
+                </ORDER>
+                <REMINDER Which="MAH">
+                    <REFERENCE-DATE>
+                        <Reference-No></Reference-No>
+                        <Date></Date>
+                    </REFERENCE-DATE>
+                </REMINDER>
+                <OTHER-REFERENCE Type="ADE">
+                    <REFERENCE-DATE>
+                        <Reference-No>202307164522001</Reference-No>
+                        <Date>20230819</Date>
+                    </REFERENCE-DATE>
+                </OTHER-REFERENCE>
+            </REFERENCE>
+            <BILLER>
+                <Tax-No>CHE-111.222.333 MWST</Tax-No>
+                <Doc-Reference Type="ESR-ALT "></Doc-Reference>
+                <PARTY-ID>
+                    <Pid>41010000001234567</Pid>
+                </PARTY-ID>
+                <NAME-ADDRESS Format="COM">
+                    <NAME>
+                        <Line-35>Adam Adler</Line-35>
+                        <Line-35>Bahnhofstrasse 1</Line-35>
+                        <Line-35>8000 Zuerich</Line-35>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                    </NAME>
+                    <STREET>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                    </STREET>
+                    <City></City>
+                    <State></State>
+                    <Zip></Zip>
+                    <Country></Country>
+                </NAME-ADDRESS>
+                <BANK-INFO>
+                    <Acct-No></Acct-No>
+                    <Acct-Name></Acct-Name>
+                    <BankId Type="BCNr-nat" Country="CH">001996</BankId>
+                </BANK-INFO>
+            </BILLER>
+            <PAYER>
+                <PARTY-ID>
+                    <Pid>41301000000012498</Pid>
+                </PARTY-ID>
+                <NAME-ADDRESS Format="COM">
+                    <NAME>
+                        <Line-35>Blerina Berisha</Line-35>
+                        <Line-35>Fabrikstrasse 32</Line-35>
+                        <Line-35>8610 Uster</Line-35>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                    </NAME>
+                    <STREET>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                        <Line-35></Line-35>
+                    </STREET>
+                    <City></City>
+                    <State></State>
+                    <Zip></Zip>
+                    <Country></Country>
+                </NAME-ADDRESS>
+            </PAYER>
+        </HEADER>
+        <LINE-ITEM />
+        <SUMMARY>
+            <INVOICE-AMOUNT>
+                <Amount>0000135000</Amount>
+            </INVOICE-AMOUNT>
+            <VAT-AMOUNT>
+                <Amount></Amount>
+            </VAT-AMOUNT>
+            <DEPOSIT-AMOUNT>
+                <Amount></Amount>
+                <REFERENCE-DATE>
+                    <Reference-No></Reference-No>
+                    <Date></Date>
+                </REFERENCE-DATE>
+            </DEPOSIT-AMOUNT>
+            <EXTENDED-AMOUNT Type="79">
+                <Amount></Amount>
+            </EXTENDED-AMOUNT>
+            <TAX>
+                <TAX-BASIS>
+                    <Amount></Amount>
+                </TAX-BASIS>
+                <Rate Categorie="S">0</Rate>
+                <Amount></Amount>
+            </TAX>
+            <PAYMENT-TERMS>
+                <BASIC Payment-Type="ESR" Terms-Type="1">
+                    <TERMS>
+                        <Payment-Period Type="M" On-Or-After="1" Reference-Day="31">30</Payment-Period>
+                        <Date>20230830</Date>
+                    </TERMS>
+                </BASIC>
+                <DISCOUNT Terms-Type="22">
+                    <Discount-Percentage>0.0</Discount-Percentage>
+                    <TERMS>
+                        <Payment-Period Type="M" On-Or-After="1" Reference-Day="31"></Payment-Period>
+                        <Date></Date>
+                    </TERMS>
+                    <Back-Pack-Container Encode="Base64"> </Back-Pack-Container>
+                </DISCOUNT>
+            </PAYMENT-TERMS>
+        </SUMMARY>
+    </INVOICE>
+</XML-FSCM-INVOICE-2003A>
