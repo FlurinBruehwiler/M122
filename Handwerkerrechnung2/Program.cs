@@ -2,8 +2,14 @@
 using System.Net;
 using FluentFTP;
 using FluentFTP.Helpers;
+using Handwerkerrechnung;
 using MailKit.Net.Smtp;
 using MimeKit;
+
+AppDomain.CurrentDomain.UnhandledException += (_, _) =>
+{
+    Logger.Error("There was an error, maybe the file is not very good");
+};
 
 const string invoicesPath = @"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\invoices";
 
@@ -85,15 +91,3 @@ client.Send(message);
 client.Disconnect(true);
 
 ftpKundensystem.UploadFile(zipFile, $"in/AP20b/Bruehwiler/{invoiceName}.zip");
-
-//invoices
-    //temp
-    //23003
-        //input.data
-        //invoice.xml
-        //invoice.txt
-        //folderToZip
-            //quittungsfile
-            //invoice.xml
-            //invoice.txt
-        //zipFile.zip

@@ -4,6 +4,16 @@ using FluentFTP;
 using FluentFTP.Helpers;
 using Handwerkerrechnung;
 
+AppDomain.CurrentDomain.UnhandledException += (_, _) =>
+{
+    Logger.Error("There was an error, maybe the file is not very good");
+};
+
+var isProductionEnvironment = false;
+
+if(args.Length != 0)
+    isProductionEnvironment = bool.Parse(args[0]);
+
 using var ftpKundensystem = new FtpClient
 {
     Host = "ftp.haraldmueller.ch",
@@ -27,7 +37,10 @@ Logger.Info("Connected to Six FTP");
 var file = ftpKundensystem.GetListing("out/AP20b/Bruehwiler").FirstOrDefault();
 
 if (file is null)
+{
+    Logger.Info("Keine neuen Rechnungen gefunden");
     return;
+}
 
 Logger.Info($"Neue Rechnung gefunden!!!: {file.Name}");
 
@@ -39,6 +52,12 @@ ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
 var text = File.ReadAllText(dataTempFile);
 
 Logger.Info("Rechnung erfolgreich heruntergeladen");
+
+if (isProductionEnvironment)
+{
+    ftpKundensystem.DeleteFile(file.FullName);
+    Logger.Info("Rechnung wurde auf dem FTP gelöscht");
+}
 
 var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
 
@@ -73,7 +92,10 @@ Directory.CreateDirectory(myKoohlDirectory);
 
 var finalDataFile = Path.Combine(myKoohlDirectory, "input.data");
 
-File.Move(dataTempFile, finalDataFile);
+if (!File.Exists(finalDataFile))
+{
+    File.Move(dataTempFile, finalDataFile);
+}
 
 Logger.Info("Beginne Generierung von txt Datei");
 
@@ -363,7 +385,6 @@ var xml = $"""
 """;
 
 Logger.Info("Generierung von xml Datei abgeschlosseen");
-
 
 var invoiceXmlFile = Path.Combine(myKoohlDirectory, "invoice.xml");
 var invoiceTxtFile = Path.Combine(myKoohlDirectory, "invoice.txt");

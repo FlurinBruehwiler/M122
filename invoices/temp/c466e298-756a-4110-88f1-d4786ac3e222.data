@@ -1,0 +1,8 @@
+Rechnung_23004;Auftrag_A004;Zuerich;19.08.2023;08:22:22;ZahlungszielInTagen_10
+Herkunft;41010000001234567;K821;Adam Adler;Bahnhofstrasse 1;8000 Zuerich;CHE-111.222.333 MWST;harald.mueller@tbz.ch
+Endkunde;41301000000012498;Blerina Berisha;Fabrikstrasse 32;8610 Uster
+RechnPos;1;Fancy socks pink;2;12.50;25.00;MWST_0.00%
+RechnPos;2;Fancy socks neon-green;8;12.50;100.00;MWST_0.00%
+RechnPos;3;Borat-String-Pant pink;1;58.50;58.50;MWST_0.00%
+RechnPos;4;Borat-String-Pant neon-green;1;58.50;58.50;MWST_0.00%
+RechnPos;5;Versand & Verpackung;1;9.00;9.00;MWST_0.00%

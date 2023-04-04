@@ -11,5 +11,9 @@
         <PackageReference Include="FluentFTP" Version="45.1.0" />
         <PackageReference Include="MailKit" Version="3.6.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Handwerkerrechnung\Handwerkerrechnung.csproj" />
+    </ItemGroup>
     
 </Project>
