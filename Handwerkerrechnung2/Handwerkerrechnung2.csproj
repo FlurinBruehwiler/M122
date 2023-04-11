@@ -15,5 +15,12 @@
     <ItemGroup>
       <ProjectReference Include="..\Handwerkerrechnung\Handwerkerrechnung.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\Handwerkerrechnung\appsettings.json">
+        <Link>appsettings.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
     
 </Project>

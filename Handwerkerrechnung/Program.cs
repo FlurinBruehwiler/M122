@@ -1,166 +1,165 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Text.Json;
 using FluentFTP;
 using FluentFTP.Helpers;
-using Handwerkerrechnung;
 
-AppDomain.CurrentDomain.UnhandledException += (_, _) =>
-{
-    Logger.Error("There was an error, maybe the file is not very good");
-};
+var configTxt = File.ReadAllText("appsettings.json");
+var config = JsonSerializer.Deserialize<Config>(configTxt);
 
-var isProductionEnvironment = false;
-
-if(args.Length != 0)
-    isProductionEnvironment = bool.Parse(args[0]);
+if (config is null)
+    return;
 
 using var ftpKundensystem = new FtpClient
 {
-    Host = "ftp.haraldmueller.ch",
-    Credentials = new NetworkCredential("schoolerinvoices", "Berufsschule8005!")
+    Host = config.FtpKunde.Host,
+    Credentials = new NetworkCredential(config.FtpKunde.Username, config.FtpKunde.Password)
 };
 
 ftpKundensystem.Connect();
 
-Logger.Info("Connected to Kundensystem FTP");
+Console.WriteLine("Connected to Kundensystem FTP");
 
 using var ftpSix = new FtpClient
 {
-    Host = "ftp.coinditorei.com",
-    Credentials = new NetworkCredential("zahlungssystem", "Berufsschule8005!")
+    Host = config.FtpSix.Host,
+    Credentials = new NetworkCredential(config.FtpSix.Username, config.FtpSix.Password)
 };
 
 ftpSix.Connect();
 
-Logger.Info("Connected to Six FTP");
+Console.WriteLine("Connected to Six FTP");
 
-var file = ftpKundensystem.GetListing("out/AP20b/Bruehwiler").FirstOrDefault();
+var files = ftpKundensystem.GetListing(config.FtpKunde.Out).Where(x => x.Name.StartsWith("rechnung")).ToList();
 
-if (file is null)
+if (files.Count == 0)
 {
-    Logger.Info("Keine neuen Rechnungen gefunden");
+    Console.WriteLine("Keine neuen Rechnungen gefunden");
     return;
 }
 
-Logger.Info($"Neue Rechnung gefunden!!!: {file.Name}");
+Console.WriteLine($"{files.Count} Rechnungen gefunden!!!");
 
-const string invoicesPath = @"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\invoices";
-
-var dataTempFile = Path.Combine(invoicesPath, "temp", $"{Guid.NewGuid()}.data");
-ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
-
-var text = File.ReadAllText(dataTempFile);
-
-Logger.Info("Rechnung erfolgreich heruntergeladen");
-
-if (isProductionEnvironment)
+foreach (var file in files)
 {
-    ftpKundensystem.DeleteFile(file.FullName);
-    Logger.Info("Rechnung wurde auf dem FTP gelöscht");
-}
+    try
+    {
+        Console.WriteLine("---------------------------------------");
+        Console.WriteLine($"Gestarted mit der Verarbeitung von {file.Name}");
 
-var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
+        var dataTempFile = Path.Combine(config.Invoices, "temp", $"{Guid.NewGuid()}.data");
+        ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
 
-var header = fileContnet.First();
-var herkunft = fileContnet.First(x => x.First() == "Herkunft");
-var endkunde = fileContnet.First(x => x.First() == "Endkunde");
-var content = fileContnet.Where(x => x.First() == "RechnPos").ToArray();
+        var text = File.ReadAllText(dataTempFile);
 
-var rechnungsnummer = header[0].RemovePrefix("Rechnung_"); //23003
-var auftragsnummer = header[1].RemovePrefix("Auftrag_"); //A003
+        Console.WriteLine("Rechnung erfolgreich heruntergeladen");
 
-var datum = header[3]; //21.07.2023
+        var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
 
-var herkunftId = herkunft[1];
-var herkunftName = herkunft[3]; //Adam Adler
-var herkunftAdresse1 = herkunft[4]; //Bahnhofstrasse 1
-var herkunftAdresse2 = herkunft[5].Trim(); //8000 Zuerich
+        var header = fileContnet.First();
+        var herkunft = fileContnet.First(x => x.First() == "Herkunft");
+        var endkunde = fileContnet.First(x => x.First() == "Endkunde");
+        var content = fileContnet.Where(x => x.First() == "RechnPos").ToArray();
 
-var kundennummer = herkunft[2]; //K821
-var rechnungsname = herkunft[6]; //CHE-111.222.333 MWST
+        var rechnungsnummer = header[0].RemovePrefix("Rechnung_"); //23003
+        var auftragsnummer = header[1].RemovePrefix("Auftrag_"); //A003
 
-var endkundId = endkunde[1];
-var endkundeName = endkunde[2]; //Autoleasing AG
-var endkundeAdresse1 = endkunde[3]; //Gewerbestrasse 100
-var endkundeAdresse2 = endkunde[4].Trim(); //5000 Aarau
+        var datum = header[3]; //21.07.2023
 
-Logger.Info("Parsing der Rechnung erfolgreich");
+        var herkunftId = herkunft[1];
+        var herkunftName = herkunft[3]; //Adam Adler
+        var herkunftAdresse1 = herkunft[4]; //Bahnhofstrasse 1
+        var herkunftAdresse2 = herkunft[5].Trim(); //8000 Zuerich
 
-var myKoohlDirectory = Path.Combine(invoicesPath, rechnungsnummer);
+        var kundennummer = herkunft[2]; //K821
+        var rechnungsname = herkunft[6]; //CHE-111.222.333 MWST
 
-Directory.CreateDirectory(myKoohlDirectory);
+        var endkundId = endkunde[1];
+        var endkundeName = endkunde[2]; //Autoleasing AG
+        var endkundeAdresse1 = endkunde[3]; //Gewerbestrasse 100
+        var endkundeAdresse2 = endkunde[4].Trim(); //5000 Aarau
 
-var finalDataFile = Path.Combine(myKoohlDirectory, "input.data");
+        Console.WriteLine("Parsing der Rechnung erfolgreich");
 
-if (!File.Exists(finalDataFile))
-{
-    File.Move(dataTempFile, finalDataFile);
-}
+        var myKoohlDirectory = Path.Combine(config.Invoices, rechnungsnummer);
 
-Logger.Info("Beginne Generierung von txt Datei");
+        Directory.CreateDirectory(myKoohlDirectory);
 
-var stringItems = string.Empty;
+        var finalDataFile = Path.Combine(myKoohlDirectory, "input.data");
 
-var totalAmount = 0;
+        if (!File.Exists(finalDataFile))
+        {
+            File.Move(dataTempFile, finalDataFile);
+        }
+        else
+        {
+            File.Delete(dataTempFile);
+        }
 
-foreach (var row in content)
-{
-    var nr = row[1];
-    var name = row[2];
-    var count = row[3];
-    var amount1 = row[4];
-    var amount2 = row[5];
-    // var mwst = row[6];
+        Console.WriteLine("Beginne Generierung von txt Datei");
 
-    stringItems += nr;
-    stringItems += new string(' ', 4 - nr.Length);
+        var stringItems = string.Empty;
 
-    stringItems += name;
-    stringItems += new string(' ', 38 - name.Length);
-        
-    stringItems += count;
-    stringItems += new string(' ', 12 - count.Length - amount1.Length);
+        var totalAmount = 0;
 
-    stringItems += $"{amount1}  CHF";
-    stringItems += new string(' ', 12 - amount2.Length);
-    stringItems += amount2;
+        foreach (var row in content)
+        {
+            var nr = row[1];
+            var name = row[2];
+            var count = row[3];
+            var amount1 = row[4];
+            var amount2 = row[5];
+            // var mwst = row[6];
 
-    stringItems += Environment.NewLine;
-        
-    totalAmount += int.Parse(amount2.Replace(".", ""));
-}
+            stringItems += nr;
+            stringItems += new string(' ', 4 - nr.Length);
 
-stringItems = stringItems.Trim();
+            stringItems += name;
+            stringItems += new string(' ', 38 - name.Length);
 
-var formatedTotalAmount = (totalAmount / 100).ToString("0.00").Replace(',', '.');
-var stringTotal = new string(' ', 12 - formatedTotalAmount.Length) + formatedTotalAmount;
-var string2Total = formatedTotalAmount + new string(' ', 18 - formatedTotalAmount.Length);
+            stringItems += count;
+            stringItems += new string(' ', 12 - count.Length - amount1.Length);
 
-var stringRechnungsnummer = new string(' ', 12 - rechnungsnummer.Length) + rechnungsnummer;
+            stringItems += $"{amount1}  CHF";
+            stringItems += new string(' ', 12 - amount2.Length);
+            stringItems += amount2;
 
-var startDate = DateTime.ParseExact(datum, "dd.MM.yyyy", CultureInfo.InvariantCulture);
-var endDate = startDate.AddDays(30).ToString("dd.MM.yyyy");
+            stringItems += Environment.NewLine;
 
-var padding1 = herkunftName;
-padding1 += new string(' ', 27 - herkunftName.Length);
+            totalAmount += int.Parse(amount2.Replace(".", ""));
+        }
 
-var padding2 = herkunftAdresse1;
-padding2 += new string(' ', 27 - herkunftAdresse1.Length);
+        stringItems = stringItems.Trim();
 
-var padding3 = herkunftAdresse2;
-padding3 += new string(' ', 27 - herkunftAdresse2.Length);
+        var formatedTotalAmount = (totalAmount / 100).ToString("0.00").Replace(',', '.');
+        var stringTotal = new string(' ', 12 - formatedTotalAmount.Length) + formatedTotalAmount;
+        var string2Total = formatedTotalAmount + new string(' ', 18 - formatedTotalAmount.Length);
 
-var padding4 = endkundeName;
-padding4 += new string(' ', 27 - endkundeName.Length);
+        var stringRechnungsnummer = new string(' ', 12 - rechnungsnummer.Length) + rechnungsnummer;
 
-var padding5 = endkundeAdresse1;
-padding5 += new string(' ', 27 - endkundeAdresse1.Length);
+        var startDate = DateTime.ParseExact(datum, "dd.MM.yyyy", CultureInfo.InvariantCulture);
+        var endDate = startDate.AddDays(30).ToString("dd.MM.yyyy");
 
-var padding6 = endkundeAdresse2;
-padding6 += new string(' ', 27 - endkundeAdresse2.Length);
+        var padding1 = herkunftName;
+        padding1 += new string(' ', 27 - herkunftName.Length);
+
+        var padding2 = herkunftAdresse1;
+        padding2 += new string(' ', 27 - herkunftAdresse1.Length);
+
+        var padding3 = herkunftAdresse2;
+        padding3 += new string(' ', 27 - herkunftAdresse2.Length);
+
+        var padding4 = endkundeName;
+        padding4 += new string(' ', 27 - endkundeName.Length);
+
+        var padding5 = endkundeAdresse1;
+        padding5 += new string(' ', 27 - endkundeAdresse1.Length);
+
+        var padding6 = endkundeAdresse2;
+        padding6 += new string(' ', 27 - endkundeAdresse2.Length);
 
 
-var txt = @$"-------------------------------------------------
+        var txt = @$"-------------------------------------------------
 
 
 
@@ -173,7 +172,7 @@ var txt = @$"-------------------------------------------------
 
 
 
-Uster, den {datum}                                 {endkundeName}
+Uster, den {datum}                           {endkundeName}
                                                 {endkundeAdresse1}
                                                 {endkundeAdresse2}
 
@@ -219,20 +218,20 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
 
 //Generate Rechnung als TXT
 
-var txtFileName = $"{kundennummer}_{rechnungsnummer}_invoice.txt";
+        var txtFileName = $"{kundennummer}_{rechnungsnummer}_invoice.txt";
 
-File.WriteAllText(txtFileName, txt);
+        File.WriteAllText(txtFileName, txt);
 
-Logger.Info("Generierung von txt Datei abgeschlosseen");
+        Console.WriteLine("Generierung von txt Datei abgeschlosseen");
 
 //Generate Rechnung als XML
 
-Logger.Info("Beginne generierung von xml Datei");
+        Console.WriteLine("Beginne generierung von xml Datei");
 
 
-var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
+        var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
 
-var xml = $"""
+        var xml = $"""
 <XML-FSCM-INVOICE-2003A>
     <INTERCHANGE>
         <IC-SENDER>
@@ -384,16 +383,60 @@ var xml = $"""
 </XML-FSCM-INVOICE-2003A>
 """;
 
-Logger.Info("Generierung von xml Datei abgeschlosseen");
+        Console.WriteLine("Generierung von xml Datei abgeschlosseen");
 
-var invoiceXmlFile = Path.Combine(myKoohlDirectory, "invoice.xml");
-var invoiceTxtFile = Path.Combine(myKoohlDirectory, "invoice.txt");
+        var invoiceXmlFile = Path.Combine(myKoohlDirectory, "invoice.xml");
+        var invoiceTxtFile = Path.Combine(myKoohlDirectory, "invoice.txt");
 
-File.WriteAllText(invoiceXmlFile, xml);
-File.WriteAllText(invoiceTxtFile, txt);
+        File.WriteAllText(invoiceXmlFile, xml);
+        File.WriteAllText(invoiceTxtFile, txt);
 
-ftpSix.UploadFile(invoiceXmlFile, $"in/AP20bBruehwiler/{xmlFileName}");
-ftpSix.UploadFile(invoiceTxtFile, $"in/AP20bBruehwiler/{txtFileName}");
+        ftpSix.UploadFile(invoiceXmlFile, $"{config.FtpSix.In}/{xmlFileName}");
+        ftpSix.UploadFile(invoiceTxtFile, $"{config.FtpSix.In}/{txtFileName}");
 
-Logger.Info("Upload von xml Datei abgeschlosseen");
-Logger.Info("Upload von txt Datei abgeschlosseen");
+        Console.WriteLine("Upload von xml Datei abgeschlosseen");   
+        Console.WriteLine("Upload von txt Datei abgeschlosseen");
+        
+        if (config.IsProductionEnvironment)
+        {
+            ftpKundensystem.DeleteFile(file.FullName);
+            Console.WriteLine("Rechnung wurde auf dem FTP gelöscht");
+        }
+    }
+    catch(Exception e)
+    {
+        Console.WriteLine(
+            "Es ist ein Fehler aufgetreten beim auslesen der Rechnungsdatei. Vermutlich ist das Rechnungsformat nicht korrekt");
+        Console.WriteLine(e);
+        
+        if (config.IsProductionEnvironment)
+        {
+            var errorDirectory = $"{config.FtpKunde.Out}/Error";
+            if (!ftpKundensystem.DirectoryExists(errorDirectory))
+            {
+                ftpKundensystem.CreateDirectory(errorDirectory);
+            }
+
+            var errorFile = Path.Combine(errorDirectory, file.Name);
+            ftpKundensystem.MoveFile(file.FullName, errorFile);
+            Console.WriteLine("Rechnung wurde in de Error Ordner verschoben");
+        }
+    }
+}
+
+public class Config
+{
+    public bool IsProductionEnvironment { get; set; }
+    public required Ftp FtpKunde { get; set; }
+    public required Ftp FtpSix { get; set; }
+    public required string Invoices { get; set; }
+}
+
+public class Ftp
+{
+    public required string Host { get; set; }
+    public required string Username { get; set; }
+    public required string Password { get; set; }
+    public required string Out { get; set; }
+    public required string In { get; set; }
+}
