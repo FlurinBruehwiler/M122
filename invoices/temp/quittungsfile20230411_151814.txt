@@ -1,0 +1,4 @@
+20230411-151814  K234_90449_invoice.txt verarbeitet -- HaraldMüller;Rainstrasse27;8610Uster;CHE-111.222.333MWST;Kundennummer:K234;RechnungNr90449;TotalCHF25.00;ZahlungszielohneAbzug15Tage(29.05.2023)
+20230411-151814  K234_90448_invoice.txt verarbeitet -- HaraldMüller;Rainstrasse27;8610Uster;CHE-111.222.333MWST;Kundennummer:K234;RechnungNr90448;TotalCHF25.00;ZahlungszielohneAbzug10Tage(24.05.2023)
+20230411-151814  K234_90449_invoice.xml verarbeitet -- Ref:202307314522001/Ref:90449/Ref:A448/Ref:202307164522001/Amt:0000250000/
+20230411-151814  K234_90448_invoice.xml verarbeitet -- Ref:202307314522001/Ref:90448/Ref:A448/Ref:202307164522001/Amt:0000250000/

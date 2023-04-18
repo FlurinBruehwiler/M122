@@ -11,16 +11,16 @@
         <PackageReference Include="FluentFTP" Version="45.1.0" />
         <PackageReference Include="MailKit" Version="3.6.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Handwerkerrechnung\Handwerkerrechnung.csproj" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <Content Include="..\Handwerkerrechnung\appsettings.json">
         <Link>appsettings.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
     
 </Project>

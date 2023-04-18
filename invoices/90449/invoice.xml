@@ -4,7 +4,7 @@
             <Pid>41010000001234567</Pid>
         </IC-SENDER>
         <IC-RECEIVER>
-            <Pid>41301000000012498</Pid>
+            <Pid>41301000000012497</Pid>
         </IC-RECEIVER>
         <IR-Ref />
     </INTERCHANGE>
@@ -17,23 +17,23 @@
             <MESSAGE-REFERENCE>
                 <REFERENCE-DATE>
                     <Reference-No>202307314522001</Reference-No>
-                    <Date>20230819</Date>
+                    <Date>20230514</Date>
                 </REFERENCE-DATE>
             </MESSAGE-REFERENCE>
             <PRINT-DATE>
-                <Date>20230819</Date>
+                <Date>20230514</Date>
             </PRINT-DATE>
             <REFERENCE>
                 <INVOICE-REFERENCE>
                     <REFERENCE-DATE>
-                        <Reference-No>23004</Reference-No>
-                        <Date>20230819</Date>
+                        <Reference-No>90449</Reference-No>
+                        <Date>20230514</Date>
                     </REFERENCE-DATE>
                 </INVOICE-REFERENCE>
                 <ORDER>
                     <REFERENCE-DATE>
-                        <Reference-No>A004</Reference-No>
-                        <Date>20230819</Date>
+                        <Reference-No>A448</Reference-No>
+                        <Date>20230514</Date>
                     </REFERENCE-DATE>
                 </ORDER>
                 <REMINDER Which="MAH">
@@ -45,7 +45,7 @@
                 <OTHER-REFERENCE Type="ADE">
                     <REFERENCE-DATE>
                         <Reference-No>202307164522001</Reference-No>
-                        <Date>20230819</Date>
+                        <Date>20230514</Date>
                     </REFERENCE-DATE>
                 </OTHER-REFERENCE>
             </REFERENCE>
@@ -57,9 +57,9 @@
                 </PARTY-ID>
                 <NAME-ADDRESS Format="COM">
                     <NAME>
-                        <Line-35>Adam Adler</Line-35>
-                        <Line-35>Bahnhofstrasse 1</Line-35>
-                        <Line-35>8000 Zuerich</Line-35>
+                        <Line-35>Harald Müller</Line-35>
+                        <Line-35>Rainstrasse 27</Line-35>
+                        <Line-35>8610 Uster</Line-35>
                         <Line-35></Line-35>
                         <Line-35></Line-35>
                     </NAME>
@@ -81,13 +81,13 @@
             </BILLER>
             <PAYER>
                 <PARTY-ID>
-                    <Pid>41301000000012498</Pid>
+                    <Pid>41301000000012497</Pid>
                 </PARTY-ID>
                 <NAME-ADDRESS Format="COM">
                     <NAME>
-                        <Line-35>Blerina Berisha</Line-35>
-                        <Line-35>Fabrikstrasse 32</Line-35>
-                        <Line-35>8610 Uster</Line-35>
+                        <Line-35>Herrgott im Himmel</Line-35>
+                        <Line-35>Wolke 7</Line-35>
+                        <Line-35>6666 Himmelsdorf</Line-35>
                         <Line-35></Line-35>
                         <Line-35></Line-35>
                     </NAME>
@@ -106,7 +106,7 @@
         <LINE-ITEM />
         <SUMMARY>
             <INVOICE-AMOUNT>
-                <Amount>0000135000</Amount>
+                <Amount>0000250000</Amount>
             </INVOICE-AMOUNT>
             <VAT-AMOUNT>
                 <Amount></Amount>
@@ -132,7 +132,7 @@
                 <BASIC Payment-Type="ESR" Terms-Type="1">
                     <TERMS>
                         <Payment-Period Type="M" On-Or-After="1" Reference-Day="31">30</Payment-Period>
-                        <Date>20230830</Date>
+                        <Date>29052023</Date>
                     </TERMS>
                 </BASIC>
                 <DISCOUNT Terms-Type="22">

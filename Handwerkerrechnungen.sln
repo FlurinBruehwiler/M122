@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handwerkerrechnung", "Handw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Handwerkerrechnung2", "Handwerkerrechnung2\Handwerkerrechnung2.csproj", "{154B6ECB-9301-48AA-BD04-904EB7A81015}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{7E7C9BCB-37FA-4CEC-AC48-EECE6A4A73BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{154B6ECB-9301-48AA-BD04-904EB7A81015}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{154B6ECB-9301-48AA-BD04-904EB7A81015}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{154B6ECB-9301-48AA-BD04-904EB7A81015}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E7C9BCB-37FA-4CEC-AC48-EECE6A4A73BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E7C9BCB-37FA-4CEC-AC48-EECE6A4A73BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E7C9BCB-37FA-4CEC-AC48-EECE6A4A73BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E7C9BCB-37FA-4CEC-AC48-EECE6A4A73BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -5,8 +5,11 @@ using FluentFTP;
 using FluentFTP.Helpers;
 using MailKit.Net.Smtp;
 using MimeKit;
+using Shared;
 
-var configTxt = File.ReadAllText("appsettings.json");
+Logger.Info("-----------------------------------");
+
+var configTxt = File.ReadAllText(@"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\Handwerkerrechnung2\bin\Debug\net7.0\appsettings.json");
 var config = JsonSerializer.Deserialize<Config>(configTxt);
 
 if (config is null)
@@ -20,7 +23,7 @@ using var ftpKundensystem = new FtpClient
 
 ftpKundensystem.Connect();
 
-Console.WriteLine("Connected to Kundensystem FTP");
+Logger.Info("Connected to Kundensystem FTP");
 
 using var ftpSix = new FtpClient
 {
@@ -30,31 +33,31 @@ using var ftpSix = new FtpClient
 
 ftpSix.Connect();
 
-Console.WriteLine("Connected to Six FTP");
+Logger.Info("Connected to Six FTP");
 
 var quittungsfiles = ftpSix.GetListing(config.FtpSix.Out).Where(x => x.Name.StartsWith("quittungsfile")).ToList();
 
 if (quittungsfiles.Count == 0)
 {
-    Console.WriteLine("Keine Quittungen gefunden");
+    Logger.Info("Keine Quittungen gefunden");
     return;
 }
 
-Console.WriteLine($"{quittungsfiles.Count} Quittungen gefunden!!!");
+Logger.Info($"{quittungsfiles.Count} Quittungen gefunden!!!");
 
 foreach (var quittungsfile in quittungsfiles)
 {
     try
     {
-        Console.WriteLine("---------------------------------------");
-        Console.WriteLine($"Gestarted mit der Verarbeitung von {quittungsfile.Name}");
+        Logger.Info("---------------------------------------");
+        Logger.Info($"Gestarted mit der Verarbeitung von {quittungsfile.Name}");
     
         var tempPath = Path.Combine(config.Invoices, "temp");
         var tempFile = Path.Combine(tempPath, quittungsfile.Name);
         ftpSix.DownloadFile(tempFile, quittungsfile.FullName);
 
         var quittungsText = File.ReadAllLines(tempFile);
-        Console.WriteLine("Quittung erfolgreich heruntergeladen");
+        Logger.Info("Quittung erfolgreich heruntergeladen");
 
         var invoiceName = quittungsText.First().Split(" ").First(x => x.Contains("_invoice.xml")).Split("_")[1];
     
@@ -83,7 +86,7 @@ foreach (var quittungsfile in quittungsfiles)
         if (!File.Exists(zipFile))
         {
             ZipFile.CreateFromDirectory(folderToZip, zipFile);
-            Console.WriteLine("Zip Date wurde erstellt");
+            Logger.Info("Zip Date wurde erstellt");
         }
     
         var inputDataText = File.ReadAllLines(Path.Combine(invoiceFolder, "input.data"));
@@ -100,6 +103,7 @@ foreach (var quittungsfile in quittungsfiles)
     
         var builder = new BodyBuilder();
         builder.Attachments.Add(zipFile);
+        builder.TextBody = "Viel Glück mit Ihrer Rechnung :)";
         message.Body = builder.ToMessageBody();
     
         if (config.IsProductionEnvironment)
@@ -110,15 +114,34 @@ foreach (var quittungsfile in quittungsfiles)
             client.Send(message);
             client.Disconnect(true);
             
-            Console.WriteLine("Mail wurde erfolgreich versendet");
+            Logger.Info("Mail wurde erfolgreich versendet");
         }
     
         ftpKundensystem.UploadFile(zipFile, $"{config.FtpKunde.In}/{invoiceName}.zip");
+
+        if (config.IsProductionEnvironment)
+        {
+            ftpSix.DeleteFile(quittungsfile.FullName);
+            Logger.Info("Quittung wurde auf dem FTP gelöscht");            
+        }
     }
     catch(Exception e)
     {
-        Console.WriteLine(
+        Logger.Info(
             "Es ist ein Fehler aufgetreten beim auslesen der Rechnungsdatei. Vermutlich ist die Quittung nicht korrekt");
-        Console.WriteLine(e);
+        Logger.Info(e.ToString());
+        
+        if (config.IsProductionEnvironment)
+        {
+            var errorDirectory = $"{config.FtpSix.Out}/Error";
+            if (!ftpKundensystem.DirectoryExists(errorDirectory))
+            {
+                ftpKundensystem.CreateDirectory(errorDirectory);
+            }
+
+            var errorFile = Path.Combine(errorDirectory, quittungsfile.Name);
+            ftpKundensystem.MoveFile(quittungsfile.FullName, errorFile);
+            Logger.Info("Quittung wurde in de Error Ordner verschoben");
+        }
     }
 }

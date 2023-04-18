@@ -3,8 +3,11 @@ using System.Net;
 using System.Text.Json;
 using FluentFTP;
 using FluentFTP.Helpers;
+using Shared;
 
-var configTxt = File.ReadAllText("appsettings.json");
+Logger.Info("-----------------------------------");
+
+var configTxt = File.ReadAllText(@"C:\Users\FBR\RiderProjects\Handwerkerrechnungen\Handwerkerrechnung2\bin\Debug\net7.0\appsettings.json");
 var config = JsonSerializer.Deserialize<Config>(configTxt);
 
 if (config is null)
@@ -18,7 +21,7 @@ using var ftpKundensystem = new FtpClient
 
 ftpKundensystem.Connect();
 
-Console.WriteLine("Connected to Kundensystem FTP");
+Logger.Info("Connected to Kundensystem FTP");
 
 using var ftpSix = new FtpClient
 {
@@ -28,31 +31,31 @@ using var ftpSix = new FtpClient
 
 ftpSix.Connect();
 
-Console.WriteLine("Connected to Six FTP");
+Logger.Info("Connected to Six FTP");
 
 var files = ftpKundensystem.GetListing(config.FtpKunde.Out).Where(x => x.Name.StartsWith("rechnung")).ToList();
 
 if (files.Count == 0)
 {
-    Console.WriteLine("Keine neuen Rechnungen gefunden");
+    Logger.Info("Keine neuen Rechnungen gefunden");
     return;
 }
 
-Console.WriteLine($"{files.Count} Rechnungen gefunden!!!");
+Logger.Info($"{files.Count} Rechnungen gefunden!!!");
 
 foreach (var file in files)
 {
     try
     {
-        Console.WriteLine("---------------------------------------");
-        Console.WriteLine($"Gestarted mit der Verarbeitung von {file.Name}");
+        Logger.Info("---------------------------------------");
+        Logger.Info($"Gestarted mit der Verarbeitung von {file.Name}");
 
         var dataTempFile = Path.Combine(config.Invoices, "temp", $"{Guid.NewGuid()}.data");
         ftpKundensystem.DownloadFile(dataTempFile, file.FullName);
 
         var text = File.ReadAllText(dataTempFile);
 
-        Console.WriteLine("Rechnung erfolgreich heruntergeladen");
+        Logger.Info("Rechnung erfolgreich heruntergeladen");
 
         var fileContnet = text.Split("\n").Select(x => x.Split(";")).ToArray();
 
@@ -63,6 +66,7 @@ foreach (var file in files)
 
         var rechnungsnummer = header[0].RemovePrefix("Rechnung_"); //23003
         var auftragsnummer = header[1].RemovePrefix("Auftrag_"); //A003
+        var daysToAdd = int.Parse(header[5].RemovePrefix("ZahlungszielInTagen_"));
 
         var datum = header[3]; //21.07.2023
 
@@ -79,7 +83,7 @@ foreach (var file in files)
         var endkundeAdresse1 = endkunde[3]; //Gewerbestrasse 100
         var endkundeAdresse2 = endkunde[4].Trim(); //5000 Aarau
 
-        Console.WriteLine("Parsing der Rechnung erfolgreich");
+        Logger.Info("Parsing der Rechnung erfolgreich");
 
         var myKoohlDirectory = Path.Combine(config.Invoices, rechnungsnummer);
 
@@ -96,7 +100,7 @@ foreach (var file in files)
             File.Delete(dataTempFile);
         }
 
-        Console.WriteLine("Beginne Generierung von txt Datei");
+        Logger.Info("Beginne Generierung von txt Datei");
 
         var stringItems = string.Empty;
 
@@ -131,6 +135,8 @@ foreach (var file in files)
 
         stringItems = stringItems.Trim();
 
+        var differentFormatedTotalAmount = "0000" + totalAmount + "00";
+        
         var formatedTotalAmount = (totalAmount / 100).ToString("0.00").Replace(',', '.');
         var stringTotal = new string(' ', 12 - formatedTotalAmount.Length) + formatedTotalAmount;
         var string2Total = formatedTotalAmount + new string(' ', 18 - formatedTotalAmount.Length);
@@ -138,7 +144,8 @@ foreach (var file in files)
         var stringRechnungsnummer = new string(' ', 12 - rechnungsnummer.Length) + rechnungsnummer;
 
         var startDate = DateTime.ParseExact(datum, "dd.MM.yyyy", CultureInfo.InvariantCulture);
-        var endDate = startDate.AddDays(30).ToString("dd.MM.yyyy");
+        var endDate = startDate.AddDays(daysToAdd).ToString("dd.MM.yyyy");
+        var endDate2 = startDate.AddDays(daysToAdd).ToString("ddMMyyyy");
 
         var padding1 = herkunftName;
         padding1 += new string(' ', 27 - herkunftName.Length);
@@ -194,7 +201,7 @@ Rechnung Nr{stringRechnungsnummer}
 
 
 
-Zahlungsziel ohne Abzug 30 Tage ({endDate})
+Zahlungsziel ohne Abzug {daysToAdd} Tage ({endDate})
 
 
 Empfangsschein             Zahlteil                
@@ -215,22 +222,10 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
 
 -------------------------------------------------
 ";
-
-//Generate Rechnung als TXT
-
-        var txtFileName = $"{kundennummer}_{rechnungsnummer}_invoice.txt";
-
-        File.WriteAllText(txtFileName, txt);
-
-        Console.WriteLine("Generierung von txt Datei abgeschlosseen");
-
-//Generate Rechnung als XML
-
-        Console.WriteLine("Beginne generierung von xml Datei");
-
-
-        var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
-
+        
+        Logger.Info("Generierung von txt Datei abgeschlosseen");
+        Logger.Info("Beginne generierung von xml Datei");
+        
         var xml = $"""
 <XML-FSCM-INVOICE-2003A>
     <INTERCHANGE>
@@ -340,7 +335,7 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
         <LINE-ITEM />
         <SUMMARY>
             <INVOICE-AMOUNT>
-                <Amount>0000135000</Amount>
+                <Amount>{differentFormatedTotalAmount}</Amount>
             </INVOICE-AMOUNT>
             <VAT-AMOUNT>
                 <Amount></Amount>
@@ -366,7 +361,7 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
                 <BASIC Payment-Type="ESR" Terms-Type="1">
                     <TERMS>
                         <Payment-Period Type="M" On-Or-After="1" Reference-Day="31">30</Payment-Period>
-                        <Date>20230830</Date>
+                        <Date>{endDate2}</Date>
                     </TERMS>
                 </BASIC>
                 <DISCOUNT Terms-Type="22">
@@ -383,7 +378,7 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
 </XML-FSCM-INVOICE-2003A>
 """;
 
-        Console.WriteLine("Generierung von xml Datei abgeschlosseen");
+        Logger.Info("Generierung von xml Datei abgeschlosseen");
 
         var invoiceXmlFile = Path.Combine(myKoohlDirectory, "invoice.xml");
         var invoiceTxtFile = Path.Combine(myKoohlDirectory, "invoice.txt");
@@ -391,23 +386,26 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
         File.WriteAllText(invoiceXmlFile, xml);
         File.WriteAllText(invoiceTxtFile, txt);
 
+        var txtFileName = $"{kundennummer}_{rechnungsnummer}_invoice.txt";
+        var xmlFileName = $"{kundennummer}_{rechnungsnummer}_invoice.xml";
+
         ftpSix.UploadFile(invoiceXmlFile, $"{config.FtpSix.In}/{xmlFileName}");
         ftpSix.UploadFile(invoiceTxtFile, $"{config.FtpSix.In}/{txtFileName}");
 
-        Console.WriteLine("Upload von xml Datei abgeschlosseen");   
-        Console.WriteLine("Upload von txt Datei abgeschlosseen");
+        Logger.Info("Upload von xml Datei abgeschlosseen");   
+        Logger.Info("Upload von txt Datei abgeschlosseen");
         
         if (config.IsProductionEnvironment)
         {
             ftpKundensystem.DeleteFile(file.FullName);
-            Console.WriteLine("Rechnung wurde auf dem FTP gelöscht");
+            Logger.Info("Rechnung wurde auf dem FTP gelöscht");
         }
     }
     catch(Exception e)
     {
-        Console.WriteLine(
+        Logger.Info(
             "Es ist ein Fehler aufgetreten beim auslesen der Rechnungsdatei. Vermutlich ist das Rechnungsformat nicht korrekt");
-        Console.WriteLine(e);
+        Logger.Info(e.ToString());
         
         if (config.IsProductionEnvironment)
         {
@@ -419,24 +417,8 @@ CHF      {string2Total}CHF      {formatedTotalAmount}
 
             var errorFile = Path.Combine(errorDirectory, file.Name);
             ftpKundensystem.MoveFile(file.FullName, errorFile);
-            Console.WriteLine("Rechnung wurde in de Error Ordner verschoben");
+            Logger.Info("Rechnung wurde in de Error Ordner verschoben");
         }
     }
 }
 
-public class Config
-{
-    public bool IsProductionEnvironment { get; set; }
-    public required Ftp FtpKunde { get; set; }
-    public required Ftp FtpSix { get; set; }
-    public required string Invoices { get; set; }
-}
-
-public class Ftp
-{
-    public required string Host { get; set; }
-    public required string Username { get; set; }
-    public required string Password { get; set; }
-    public required string Out { get; set; }
-    public required string In { get; set; }
-}
